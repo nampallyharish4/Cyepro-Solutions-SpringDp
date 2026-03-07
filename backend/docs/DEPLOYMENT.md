@@ -24,10 +24,9 @@ Use this repository as a monorepo and deploy from `backend` root.
 
 1. In Render, create a **Web Service** from `nampallyharish4/Cyepro-Spring`.
 2. Configure:
-   - Root Directory: `backend`
-   - Runtime: `Java` (or Render native build)
-   - Build Command: `bash ./mvnw clean package -DskipTests`
-   - Start Command: `java -jar target/cyepro-stack2-0.0.1-SNAPSHOT.jar`
+   - Runtime: `Docker`
+   - Dockerfile Path: `backend/Dockerfile`
+   - Docker Context: `backend`
    - Health Check Path: `/health`
 3. Add environment variables:
    - `DB_URL` = `jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require`
@@ -47,7 +46,7 @@ Use this repository as a monorepo and deploy from `backend` root.
 
 This repository now includes `render.yaml` at root. You can use **Blueprint** deploy in Render to auto-create the backend service with the same build/start/health settings.
 
-If Render shows `./mvnw: Permission denied`, keep using the `bash ./mvnw ...` build command (or prepend `chmod +x mvnw &&`).
+If you don't see a Java runtime in Render, use this Docker-based flow. It avoids runtime selection issues and guarantees JDK 17 during build and runtime.
 
 ## Frontend Deployment (Vercel)
 
