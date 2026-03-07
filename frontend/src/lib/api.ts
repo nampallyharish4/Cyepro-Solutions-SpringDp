@@ -22,12 +22,15 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (
-      (error.response?.status === 401 || error.response?.status === 403) &&
-      typeof window !== 'undefined'
-    ) {
-      await supabase.auth.signOut();
-      window.location.href = '/login';
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      // Try refreshing the session once before giving up
+      const {
+        data: { session },
+      } = await supabase.auth.refreshSession();
+      if (!session) {
+        // Session is truly gone — redirect to login without destroying storage
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import { clsx, type ClassValue } from 'clsx';
@@ -16,25 +16,28 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isLoginPage = pathname === '/login';
   const [ready, setReady] = useState(false);
+  const initialised = useRef(false);
 
   useEffect(() => {
-    const check = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session && !isLoginPage) {
-        router.replace('/login');
-      } else {
-        setReady(true);
-      }
-    };
-    check();
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && pathname !== '/login') {
-        router.replace('/login');
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION') {
+        initialised.current = true;
+        if (!session && !isLoginPage) {
+          router.replace('/login');
+        } else if (session && isLoginPage) {
+          router.replace('/');
+        } else {
+          setReady(true);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setReady(false);
+        if (pathname !== '/login') {
+          router.replace('/login');
+        }
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setReady(true);
       }
     });
     return () => subscription.unsubscribe();

@@ -35,8 +35,7 @@ export default function Login() {
           options: { emailRedirectTo: undefined },
         });
         if (error) throw error;
-        if (data.session?.access_token) {
-          localStorage.setItem('token', data.session.access_token);
+        if (data.session) {
           router.push('/');
           return;
         }
@@ -44,14 +43,11 @@ export default function Login() {
         setSuccess('Account created! You can now sign in.');
         setMode('login');
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
         if (error) throw error;
-        if (data.session?.access_token) {
-          localStorage.setItem('token', data.session.access_token);
-        }
         router.push('/');
       }
     } catch (err: any) {
