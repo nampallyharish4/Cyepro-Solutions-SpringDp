@@ -18,7 +18,6 @@ public class EventRequest {
     @NotNull
     private String eventType;
     private String title;
-    @NotNull
     private String message;
     @NotNull
     private String source;

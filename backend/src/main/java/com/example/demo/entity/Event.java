@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "events")
+@Table(name = "notification_events")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

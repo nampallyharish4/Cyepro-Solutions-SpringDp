@@ -20,7 +20,7 @@ public class AIAnalysis {
     private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "event_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Event event;
 
     @Column(nullable = false)

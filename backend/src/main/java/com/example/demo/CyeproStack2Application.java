@@ -7,8 +7,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Map;
 
 @SpringBootApplication
@@ -22,6 +26,32 @@ public class CyeproStack2Application {
 	}
 
 	@Bean
+	@Order(1)
+	CommandLineRunner fixForeignKeys(DataSource dataSource) {
+		return args -> {
+			String[] badConstraints = {
+				"ALTER TABLE ai_analysis DROP CONSTRAINT IF EXISTS fk8bgsryt6w6k6bgw1mxpfrm0o6",
+				"ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS fkihx3rvcfyc1ym81lgqknqd0yv",
+				"ALTER TABLE later_queue DROP CONSTRAINT IF EXISTS fk5mjvdhx3u2cemjytbm2bxwrhe"
+			};
+			try (Connection conn = dataSource.getConnection();
+				 Statement stmt = conn.createStatement()) {
+				for (String sql : badConstraints) {
+					try {
+						stmt.execute(sql);
+						log.info("FK cleanup executed: {}", sql);
+					} catch (Exception e) {
+						log.debug("FK cleanup skipped ({}): {}", sql, e.getMessage());
+					}
+				}
+			} catch (Exception e) {
+				log.warn("FK cleanup failed: {}", e.getMessage());
+			}
+		};
+	}
+
+	@Bean
+	@Order(2)
 	CommandLineRunner initRules(RuleRepository ruleRepository) {
 		return args -> {
 			if (ruleRepository.count() == 0) {
