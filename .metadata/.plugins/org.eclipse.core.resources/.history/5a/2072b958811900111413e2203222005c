@@ -1,0 +1,34 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.DecisionResponse;
+import com.example.demo.dto.EventRequest;
+import com.example.demo.service.PrioritizationService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class NotificationController {
+    private final PrioritizationService prioritizationService;
+
+    @PostMapping("/events")
+    public ResponseEntity<DecisionResponse> ingestEvent(@Valid @RequestBody EventRequest request) {
+        DecisionResponse response = prioritizationService.process(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        return ResponseEntity.ok(Map.of(
+            "system_status", "UP",
+            "database_status", "UP",
+            "ai_service_status", "UP",
+            "circuit_breaker_state", "CLOSED",
+            "timestamp", java.time.OffsetDateTime.now().toString()
+        ));
+    }
+}

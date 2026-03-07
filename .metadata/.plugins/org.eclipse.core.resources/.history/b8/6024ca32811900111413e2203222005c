@@ -1,0 +1,25 @@
+package com.example.demo.dto;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.UUID;
+
+@Data
+public class EventRequest {
+    @NotNull
+    private UUID userId;
+    @NotNull
+    private String eventType;
+    @NotNull
+    private String message;
+    @NotNull
+    private String source;
+    @NotNull
+    private String priorityHint;
+    private String channel;
+    private Map<String, Object> metadata;
+    private String dedupeKey;
+    private OffsetDateTime expiresAt;
+}

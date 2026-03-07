@@ -1,0 +1,42 @@
+package com.example.demo.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "later_queue")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LaterQueue {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+    @OneToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    @Column(name = "retry_count")
+    private Integer retryCount;
+
+    @Column(name = "next_run_at")
+    private OffsetDateTime nextRunAt;
+
+    @Column(nullable = false)
+    private String status; // PENDING, PROCESSING, COMPLETED, FAILED
+
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+        if (retryCount == null) retryCount = 0;
+        if (nextRunAt == null) nextRunAt = OffsetDateTime.now();
+        if (status == null) status = "PENDING";
+    }
+}

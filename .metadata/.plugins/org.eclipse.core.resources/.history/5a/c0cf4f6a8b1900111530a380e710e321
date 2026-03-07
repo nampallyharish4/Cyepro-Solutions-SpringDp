@@ -1,0 +1,130 @@
+package com.example.demo.entity;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "events")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Event {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(name = "event_type", nullable = false)
+    private String eventType;
+
+    @Column(nullable = false)
+    private String message;
+
+    @Column(nullable = false)
+    private String source;
+
+    @Column(name = "priority_hint", nullable = false)
+    private String priorityHint;
+
+    private String channel;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, Object> metadata;
+
+    @Column(name = "dedupe_key")
+    private String dedupeKey;
+
+    @Column(name = "expires_at")
+    private OffsetDateTime expiresAt;
+
+    public Event() {}
+
+    public Event(UUID id, UUID userId, String eventType, String message, String source, String priorityHint, String channel, Map<String, Object> metadata, String dedupeKey, OffsetDateTime expiresAt) {
+        this.id = id;
+        this.userId = userId;
+        this.eventType = eventType;
+        this.message = message;
+        this.source = source;
+        this.priorityHint = priorityHint;
+        this.channel = channel;
+        this.metadata = metadata;
+        this.dedupeKey = dedupeKey;
+        this.expiresAt = expiresAt;
+    }
+
+    public static EventBuilder builder() {
+        return new EventBuilder();
+    }
+
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
+    public String getEventType() { return eventType; }
+    public void setEventType(String eventType) { this.eventType = eventType; }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+    public String getPriorityHint() { return priorityHint; }
+    public void setPriorityHint(String priorityHint) { this.priorityHint = priorityHint; }
+    public String getChannel() { return channel; }
+    public void setChannel(String channel) { this.channel = channel; }
+    public Map<String, Object> getMetadata() { return metadata; }
+    public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+    public String getDedupeKey() { return dedupeKey; }
+    public void setDedupeKey(String dedupeKey) { this.dedupeKey = dedupeKey; }
+    public OffsetDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(OffsetDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public static class EventBuilder {
+        private UUID id;
+        private UUID userId;
+        private String eventType;
+        private String message;
+        private String source;
+        private String priorityHint;
+        private String channel;
+        private Map<String, Object> metadata;
+        private String dedupeKey;
+        private OffsetDateTime expiresAt;
+
+        public EventBuilder id(UUID id) { this.id = id; return this; }
+        public EventBuilder userId(UUID userId) { this.userId = userId; return this; }
+        public EventBuilder eventType(String eventType) { this.eventType = eventType; return this; }
+        public EventBuilder message(String message) { this.message = message; return this; }
+        public EventBuilder source(String source) { this.source = source; return this; }
+        public EventBuilder priorityHint(String priorityHint) { this.priorityHint = priorityHint; return this; }
+        public EventBuilder channel(String channel) { this.channel = channel; return this; }
+        public EventBuilder metadata(Map<String, Object> metadata) { this.metadata = metadata; return this; }
+        public EventBuilder dedupeKey(String dedupeKey) { this.dedupeKey = dedupeKey; return this; }
+        public EventBuilder expiresAt(OffsetDateTime expiresAt) { this.expiresAt = expiresAt; return this; }
+
+        public Event build() {
+            return new Event(id, userId, eventType, message, source, priorityHint, channel, metadata, dedupeKey, expiresAt);
+        }
+    }
+
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
+}

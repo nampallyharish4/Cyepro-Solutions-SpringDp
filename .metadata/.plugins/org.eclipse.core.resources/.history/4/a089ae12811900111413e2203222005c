@@ -1,0 +1,45 @@
+package com.example.demo.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "ai_analysis")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AIAnalysis {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+    @OneToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    @Column(nullable = false)
+    private String classification; // NOW, LATER, NEVER
+
+    @Column(nullable = false)
+    private Double confidence;
+
+    private String reason;
+
+    @Column(name = "model_used")
+    private String modelUsed;
+
+    @Column(name = "fallback_used")
+    private Boolean fallbackUsed;
+
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+        if (fallbackUsed == null) fallbackUsed = false;
+    }
+}
