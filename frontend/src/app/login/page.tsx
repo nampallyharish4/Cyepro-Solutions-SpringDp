@@ -29,14 +29,19 @@ export default function Login() {
 
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
+          options: { emailRedirectTo: undefined },
         });
         if (error) throw error;
-        setSuccess(
-          'Account created! Check your email to confirm, then log in.',
-        );
+        if (data.session?.access_token) {
+          localStorage.setItem('token', data.session.access_token);
+          router.push('/');
+          return;
+        }
+        // fallback if auto-login didn't happen
+        setSuccess('Account created! You can now sign in.');
         setMode('login');
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
