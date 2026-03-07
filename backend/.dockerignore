@@ -1,0 +1,12 @@
+target/
+.mvn/
+mvnw
+mvnw.cmd
+.env
+run.bat
+.idea/
+.vscode/
+*.iml
+docs/
+scripts/
+TestConn.java

@@ -4,14 +4,11 @@ WORKDIR /workspace
 
 # Cache dependencies first for faster rebuilds
 COPY pom.xml ./
-COPY .mvn ./.mvn
-COPY mvnw ./mvnw
-RUN chmod +x mvnw
-RUN ./mvnw -DskipTests dependency:go-offline
+RUN mvn -DskipTests dependency:go-offline
 
 # Build application
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Runtime image
 FROM eclipse-temurin:17-jre
