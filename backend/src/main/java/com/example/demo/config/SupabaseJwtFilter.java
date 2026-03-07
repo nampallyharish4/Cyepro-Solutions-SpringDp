@@ -42,6 +42,12 @@ public class SupabaseJwtFilter extends OncePerRequestFilter {
     private final SupabaseConfig supabaseConfig;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.equals("/health") || path.startsWith("/actuator");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)

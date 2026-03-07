@@ -7,35 +7,50 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  ShieldAlert,
+  UserPlus,
+  LogIn,
   Terminal,
 } from 'lucide-react';
-import axios from 'axios';
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    email: 'admin@cyepro.com',
-    password: 'password123',
-  });
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [form, setForm] = useState({ email: '', password: '' });
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccess('');
+
     try {
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api'}/login`,
-        form,
-      );
-      if (typeof data.token === 'string' && data.token.length > 0) {
-        localStorage.setItem('token', data.token);
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+        });
+        if (error) throw error;
+        setSuccess(
+          'Account created! Check your email to confirm, then log in.',
+        );
+        setMode('login');
       } else {
-        localStorage.removeItem('token');
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+        if (error) throw error;
+        if (data.session?.access_token) {
+          localStorage.setItem('token', data.session.access_token);
+        }
+        router.push('/');
       }
-      router.push('/');
-    } catch (err) {
-      alert('Invalid credentials / Database connection failed');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -59,17 +74,63 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Login Form */}
+        {/* Login / Signup Form */}
         <div className="glass-card p-10 neon-border-purple space-y-8">
-          <form onSubmit={handleLogin} className="space-y-6">
+          {/* Mode Toggle */}
+          <div className="flex rounded-xl bg-white/5 p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('login');
+                setError('');
+                setSuccess('');
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold uppercase tracking-widest transition-all ${
+                mode === 'login'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <LogIn className="h-4 w-4" /> Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setError('');
+                setSuccess('');
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold uppercase tracking-widest transition-all ${
+                mode === 'signup'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <UserPlus className="h-4 w-4" /> Sign Up
+            </button>
+          </div>
+
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-xs text-red-400 font-medium">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-xs text-emerald-400 font-medium">
+              {success}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                Access Key (Email)
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-600" />
                 <input
                   type="email"
+                  required
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -79,12 +140,14 @@ export default function Login() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                Master Secret
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-600" />
                 <input
                   type="password"
+                  required
+                  minLength={6}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                   value={form.password}
                   onChange={(e) =>
@@ -102,53 +165,19 @@ export default function Login() {
                 'Authenticating...'
               ) : (
                 <>
-                  Engage System
+                  {mode === 'login' ? 'Engage System' : 'Create Account'}
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}
             </button>
           </form>
-
-          {/* Mock Credentials Badge */}
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex gap-4">
-            <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-500/80 leading-relaxed font-medium">
-              <strong>Reviewer Credentials:</strong>
-              <div className="mt-2 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60 w-16">
-                    Admin
-                  </span>
-                  <code className="text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    admin@cyepro.com
-                  </code>
-                  <span className="text-amber-500/40">|</span>
-                  <code className="text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    password123
-                  </code>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/60 w-16">
-                    Operator
-                  </span>
-                  <code className="text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    operator@cyepro.com
-                  </code>
-                  <span className="text-amber-500/40">|</span>
-                  <code className="text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    operator123
-                  </code>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-center gap-2 text-zinc-600">
           <Terminal className="h-4 w-4" />
           <span className="text-[10px] font-bold uppercase tracking-widest">
-            Secured by Cyepro Solutions
+            Secured by Supabase Auth
           </span>
         </div>
       </div>

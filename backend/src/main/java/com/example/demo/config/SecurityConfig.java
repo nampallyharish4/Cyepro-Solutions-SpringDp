@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * SecurityConfig wires up:
@@ -42,15 +43,21 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // ── Public endpoints (no JWT required) ───────────────────────
                 .requestMatchers(
-                    "/health",             // root health used by UI checks
-                    "/api/**",             // current app APIs are tokenless
-                    "/actuator/**",          // health & metrics
-                    "/api/auth/**",          // login / register helpers if any
-                    "/api/public/**"         // any intentionally public APIs
+                    "/health",
+                    "/actuator/**"
                 ).permitAll()
+
+                // ── All API endpoints require a valid Supabase JWT ──────────
+                .requestMatchers("/api/**").authenticated()
 
                 // ── Everything else requires a valid Supabase JWT ─────────────
                 .anyRequest().authenticated()
+            )
+
+            // Return 401 (not 403) for unauthenticated requests
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((req, res, authEx) ->
+                    res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required"))
             )
 
             // Insert Supabase JWT validation before Spring's default filter
