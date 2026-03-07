@@ -58,10 +58,16 @@ export default function RulesManager() {
       const { data } = await api.get('/rules');
       const fatigueRule = data.find((r: any) => r.name === 'FATIGUE_LIMIT');
       if (fatigueRule) {
-        setFatigueLimit(parseInt(fatigueRule.condition_value));
+        const parsed = parseInt(fatigueRule.condition_value);
+        setFatigueLimit(isNaN(parsed) ? 5 : parsed);
         setFatigueRuleId(fatigueRule.id);
       }
-      setRules(data.filter((r: any) => r.condition_type !== 'system_setting'));
+      setRules(
+        data.filter(
+          (r: any) =>
+            r.condition_type !== 'system_setting' && r.name !== 'FATIGUE_LIMIT',
+        ),
+      );
     } catch (e) {
       console.error(e);
     } finally {

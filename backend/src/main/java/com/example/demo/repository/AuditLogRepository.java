@@ -15,14 +15,19 @@ import java.util.UUID;
 public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
     long countByDecision(String decision);
 
+    @Query(value = "SELECT a FROM AuditLog a LEFT JOIN FETCH a.event LEFT JOIN FETCH a.aiAnalysis LEFT JOIN FETCH a.ruleTriggered ORDER BY a.timestamp DESC",
+           countQuery = "SELECT COUNT(a) FROM AuditLog a")
     Page<AuditLog> findAllByOrderByTimestampDesc(Pageable pageable);
 
-    Page<AuditLog> findByDecisionOrderByTimestampDesc(String decision, Pageable pageable);
+    @Query(value = "SELECT a FROM AuditLog a LEFT JOIN FETCH a.event LEFT JOIN FETCH a.aiAnalysis LEFT JOIN FETCH a.ruleTriggered WHERE a.decision = :decision ORDER BY a.timestamp DESC",
+           countQuery = "SELECT COUNT(a) FROM AuditLog a WHERE a.decision = :decision")
+    Page<AuditLog> findByDecisionOrderByTimestampDesc(@Param("decision") String decision, Pageable pageable);
 
-    @Query("SELECT a FROM AuditLog a WHERE " +
+    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.event LEFT JOIN FETCH a.aiAnalysis LEFT JOIN FETCH a.ruleTriggered WHERE " +
            "(:decision IS NULL OR a.decision = :decision) " +
            "ORDER BY a.timestamp DESC")
     Page<AuditLog> findFiltered(@Param("decision") String decision, Pageable pageable);
 
+    @Query("SELECT a FROM AuditLog a LEFT JOIN FETCH a.event LEFT JOIN FETCH a.aiAnalysis LEFT JOIN FETCH a.ruleTriggered ORDER BY a.timestamp DESC LIMIT 10")
     List<AuditLog> findTop10ByOrderByTimestampDesc();
 }

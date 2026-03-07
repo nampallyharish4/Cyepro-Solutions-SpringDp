@@ -83,7 +83,11 @@ public class RulesController {
         // Accept both frontend format and backend format
         if (request.containsKey("condition_type") || request.containsKey("condition_value")) {
             Map<String, Object> condJson = new HashMap<>();
-            condJson.put("type", request.getOrDefault("condition_type", "source"));
+            // Preserve existing condition_type if not provided in the request
+            String existingType = (rule.getConditionJson() != null)
+                    ? (String) rule.getConditionJson().getOrDefault("type", "source")
+                    : "source";
+            condJson.put("type", request.getOrDefault("condition_type", existingType));
             condJson.put("value", request.getOrDefault("condition_value", ""));
             rule.setConditionJson(condJson);
         } else if (request.containsKey("condition_json")) {

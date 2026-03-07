@@ -63,11 +63,11 @@ public class AuditLogController {
         result.put("id", log.getId());
         result.put("decision", log.getDecision());
         result.put("reason", log.getReason());
-        result.put("processed_at", log.getTimestamp());
+        result.put("processed_at", log.getTimestamp() != null ? log.getTimestamp() : java.time.OffsetDateTime.now());
 
         // Nested event object as "notification_events" (matches frontend expectation)
+        Map<String, Object> evt = new LinkedHashMap<>();
         if (log.getEvent() != null) {
-            Map<String, Object> evt = new LinkedHashMap<>();
             result.put("event_id", log.getEvent().getId());
             evt.put("id", log.getEvent().getId());
             evt.put("user_id", log.getEvent().getUserId());
@@ -79,8 +79,13 @@ public class AuditLogController {
             evt.put("priority_hint", log.getEvent().getPriorityHint());
             evt.put("metadata", log.getEvent().getMetadata());
             evt.put("created_at", log.getEvent().getCreatedAt());
-            result.put("notification_events", evt);
+        } else {
+            // Orphaned audit log — event was deleted; provide fallback from audit fields
+            evt.put("title", log.getReason());
+            evt.put("source", log.getDecision());
+            evt.put("event_type", "ARCHIVED");
         }
+        result.put("notification_events", evt);
 
         // AI fields
         if (log.getAiAnalysis() != null) {

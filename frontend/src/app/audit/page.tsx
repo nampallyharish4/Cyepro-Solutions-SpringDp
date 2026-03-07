@@ -145,9 +145,7 @@ export default function AuditLog() {
               >
                 {/* Summary Row */}
                 <button
-                  onClick={() =>
-                    setExpandedId(isExpanded ? null : log.id)
-                  }
+                  onClick={() => setExpandedId(isExpanded ? null : log.id)}
                   className="w-full text-left p-4 sm:p-5 flex items-center gap-3 sm:gap-4 hover:bg-white/5 transition-colors"
                 >
                   {/* Decision badge */}
@@ -169,9 +167,11 @@ export default function AuditLog() {
                       </span>
                       <span className="h-1 w-1 rounded-full bg-zinc-700" />
                       <span className="text-[10px] text-zinc-600">
-                        {formatDistanceToNow(new Date(log.processed_at), {
-                          addSuffix: true,
-                        })}
+                        {log.processed_at
+                          ? formatDistanceToNow(new Date(log.processed_at), {
+                              addSuffix: true,
+                            })
+                          : '—'}
                       </span>
                     </div>
                     <h3 className="text-sm sm:text-base font-bold text-white truncate">
@@ -261,7 +261,10 @@ export default function AuditLog() {
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           <DetailItem label="Name" value={rule.name} />
-                          <DetailItem label="Type" value={rule.condition_type} />
+                          <DetailItem
+                            label="Type"
+                            value={rule.condition_type}
+                          />
                           <DetailItem
                             label="Value"
                             value={rule.condition_value}
@@ -321,17 +324,16 @@ export default function AuditLog() {
                     )}
 
                     {/* Metadata */}
-                    {evt?.metadata &&
-                      Object.keys(evt.metadata).length > 0 && (
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
-                            Event Metadata
-                          </p>
-                          <div className="bg-black/30 rounded-lg px-3 py-2 text-xs text-zinc-400 font-mono overflow-x-auto">
-                            {JSON.stringify(evt.metadata, null, 2)}
-                          </div>
+                    {evt?.metadata && Object.keys(evt.metadata).length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                          Event Metadata
+                        </p>
+                        <div className="bg-black/30 rounded-lg px-3 py-2 text-xs text-zinc-400 font-mono overflow-x-auto">
+                          {JSON.stringify(evt.metadata, null, 2)}
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     {/* IDs */}
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-[10px] text-zinc-600 pt-1 border-t border-white/5">
