@@ -18,6 +18,35 @@
 3. Set the build command: `./mvnw clean install -DskipTests`
 4. Set the start command: `java -jar target/cyepro-stack2-0.0.1-SNAPSHOT.jar`
 
+## Backend Deployment (Render - Recommended)
+
+Use this repository as a monorepo and deploy from `backend` root.
+
+1. In Render, create a **Web Service** from `nampallyharish4/Cyepro-Spring`.
+2. Configure:
+   - Root Directory: `backend`
+   - Runtime: `Java` (or Render native build)
+   - Build Command: `./mvnw clean package -DskipTests`
+   - Start Command: `java -jar target/cyepro-stack2-0.0.1-SNAPSHOT.jar`
+   - Health Check Path: `/health`
+3. Add environment variables:
+   - `DB_URL` = `jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require`
+   - `DB_USERNAME` = `postgres.llvedrcxpocdpguhxkql`
+   - `DB_PASSWORD` = `<supabase-db-password>`
+   - `AI_API_KEY` = `<groq-api-key>`
+   - `AI_API_URL` = `https://api.groq.com/openai/v1/chat/completions`
+   - `AI_MODEL` = `llama-3.3-70b-versatile`
+   - `SUPABASE_URL` = `https://llvedrcxpocdpguhxkql.supabase.co`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<supabase-service-role-key>`
+   - `SUPABASE_JWT_SECRET` = `<supabase-jwt-secret>`
+4. Deploy and verify endpoints:
+   - `GET /health`
+   - `GET /api/metrics`
+
+### Optional: Blueprint Deploy
+
+This repository now includes `render.yaml` at root. You can use **Blueprint** deploy in Render to auto-create the backend service with the same build/start/health settings.
+
 ## Frontend Deployment (Vercel)
 
 1. Connect your repository's `frontend` folder.
