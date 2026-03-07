@@ -9,11 +9,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
-    const isJwt = token && token.split('.').length === 3;
-    if (token && !isJwt) {
-      localStorage.removeItem('token');
-    }
-    if (isJwt) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }

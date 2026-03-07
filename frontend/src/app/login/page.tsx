@@ -28,10 +28,7 @@ export default function Login() {
         `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api'}/login`,
         form,
       );
-      if (
-        typeof data.token === 'string' &&
-        data.token.split('.').length === 3
-      ) {
+      if (typeof data.token === 'string' && data.token.length > 0) {
         localStorage.setItem('token', data.token);
       } else {
         localStorage.removeItem('token');
