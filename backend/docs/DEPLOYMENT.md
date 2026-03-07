@@ -26,7 +26,7 @@ Use this repository as a monorepo and deploy from `backend` root.
 2. Configure:
    - Root Directory: `backend`
    - Runtime: `Java` (or Render native build)
-   - Build Command: `./mvnw clean package -DskipTests`
+   - Build Command: `bash ./mvnw clean package -DskipTests`
    - Start Command: `java -jar target/cyepro-stack2-0.0.1-SNAPSHOT.jar`
    - Health Check Path: `/health`
 3. Add environment variables:
@@ -46,6 +46,8 @@ Use this repository as a monorepo and deploy from `backend` root.
 ### Optional: Blueprint Deploy
 
 This repository now includes `render.yaml` at root. You can use **Blueprint** deploy in Render to auto-create the backend service with the same build/start/health settings.
+
+If Render shows `./mvnw: Permission denied`, keep using the `bash ./mvnw ...` build command (or prepend `chmod +x mvnw &&`).
 
 ## Frontend Deployment (Vercel)
 
