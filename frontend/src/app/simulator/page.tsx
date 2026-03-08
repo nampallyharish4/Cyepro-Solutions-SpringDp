@@ -139,12 +139,12 @@ export default function Simulator() {
           },
           (payload) => {
             console.log('Realtime Classification:', payload.new);
-            const match = payload.new;
+            const match = payload.new as any;
             const final: SubmissionResult = {
               ...match,
               _submitted_at: pending._submitted_at,
               _form: pending._form,
-            };
+            } as SubmissionResult;
             setResult(final);
             setHistory((prev) => [final, ...prev].slice(0, 20));
             showToast(`Classified as ${match.decision}`, 'ok');
