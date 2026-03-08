@@ -14,8 +14,11 @@ Thumbs.db
 .env
 
 # Java / Maven
-backend-spring/target/
-backend-spring/.mvn/wrapper/maven-wrapper.jar
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+!**/src/**/*.jar
 
 # Node
 frontend/node_modules/
