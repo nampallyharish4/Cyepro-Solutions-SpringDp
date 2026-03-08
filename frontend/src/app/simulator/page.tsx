@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 
 const CHANNELS = ['PUSH', 'EMAIL', 'SMS', 'IN_APP', 'WEBHOOK'];
@@ -124,15 +125,21 @@ export default function Simulator() {
       };
       setResult(pending);
 
-      // Poll for audit log result
-      let attempts = 0;
-      pollRef.current = setInterval(async () => {
-        attempts++;
-        try {
-          const auditRes = await api.get('/audit', { params: { limit: 20 } });
-          const items = auditRes.data?.data || auditRes.data || [];
-          const match = items.find((a: any) => a.event_id === data.event_id);
-          if (match) {
+      // -- Supabase Realtime Integration --
+      // Instead of polling /api/audit, we listen for a specific event entry.
+      const channel = supabase
+        .channel(`classification-${data.event_id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'audit_logs',
+            filter: `event_id=eq.${data.event_id}`,
+          },
+          (payload) => {
+            console.log('Realtime Classification:', payload.new);
+            const match = payload.new;
             const final: SubmissionResult = {
               ...match,
               _submitted_at: pending._submitted_at,
@@ -140,17 +147,16 @@ export default function Simulator() {
             };
             setResult(final);
             setHistory((prev) => [final, ...prev].slice(0, 20));
-            if (pollRef.current) clearInterval(pollRef.current);
             showToast(`Classified as ${match.decision}`, 'ok');
+            supabase.removeChannel(channel);
           }
-        } catch (err) {
-          console.error(err);
-        }
-        if (attempts > 25 && pollRef.current) {
-          clearInterval(pollRef.current);
-          showToast('Classification timed out — check Audit Log', 'err');
-        }
-      }, 800);
+        )
+        .subscribe();
+
+      // Timeout safety (20 seconds)
+      setTimeout(() => {
+        supabase.removeChannel(channel);
+      }, 20000);
 
       // Reset form for next submission
       setForm((prev) => ({

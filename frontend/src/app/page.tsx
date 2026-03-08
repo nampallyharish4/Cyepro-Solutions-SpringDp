@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import api, { API_URL } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
@@ -73,7 +74,6 @@ export default function Dashboard() {
       if (healthResult.status === 'fulfilled') {
         setHealth(healthResult.value.data);
       } else {
-        console.error('Health fetch failed', healthResult.reason);
         setHealth((prev: any) => ({
           ...prev,
           status: 'ERROR',
@@ -83,19 +83,40 @@ export default function Dashboard() {
 
       if (metricsResult.status === 'fulfilled') {
         setMetrics(metricsResult.value.data);
-      } else {
-        console.error('Metrics fetch failed', metricsResult.reason);
       }
 
       if (timelineResult.status === 'fulfilled') {
         setTimeline(timelineResult.value.data);
-      } else {
-        console.error('Timeline fetch failed', timelineResult.reason);
       }
     };
+
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
+
+    // -- Supabase Realtime Integration --
+    // Listen for new audit logs to refresh metrics instantly
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'audit_logs',
+        },
+        () => {
+          console.log('Realtime update: new audit log detected.');
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    // Fallback interval (now much slower, e.g. 30s instead of 5s)
+    const interval = setInterval(fetchData, 30000);
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const chartData = [

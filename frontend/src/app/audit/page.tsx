@@ -20,6 +20,7 @@ import {
   Tag,
 } from 'lucide-react';
 import api from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 
 const FILTERS = ['ALL', 'NOW', 'LATER', 'NEVER', 'SENT', 'FAILED'] as const;
@@ -52,8 +53,27 @@ export default function AuditLog() {
   useEffect(() => {
     setMounted(true);
     fetchLogs();
-    const interval = setInterval(fetchLogs, 10000);
-    return () => clearInterval(interval);
+
+    // -- Supabase Realtime Integration --
+    const channel = supabase
+      .channel('audit-archive-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'audit_logs',
+        },
+        () => {
+          console.log('Realtime: New audit entry.');
+          fetchLogs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchLogs]);
 
   const filteredLogs = logs.filter((log: any) => {

@@ -4,16 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Zap,
   FileText,
   Settings,
   Rocket,
+  Zap,
   Send,
-  LogOut,
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { supabase } from '@/lib/supabase';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,21 +67,6 @@ export function Sidebar() {
             </Link>
           );
         })}
-
-        <div className="my-4 hidden border-t border-white/5 md:block" />
-
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut();
-            window.location.href = '/login';
-          }}
-          className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-zinc-500 transition-all duration-300 hover:text-red-400 md:w-full md:flex-row md:gap-3 md:px-4 md:hover:bg-red-500/5"
-        >
-          <LogOut className="h-6 w-6 md:h-5 md:w-5" />
-          <span className="text-[10px] font-medium whitespace-nowrap md:text-sm">
-            Logout
-          </span>
-        </button>
       </nav>
     </div>
   );
