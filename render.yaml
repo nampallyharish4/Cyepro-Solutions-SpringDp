@@ -2,27 +2,23 @@ services:
   - type: web
     name: cyepro-backend
     env: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerfilePath: ./backend-spring/Dockerfile
+    dockerContext: ./backend-spring
     plan: free
     healthCheckPath: /health
     autoDeploy: true
     envVars:
-      - key: DB_URL
+      - key: DATABASE_URL
         sync: false
-      - key: DB_USERNAME
+      - key: JWT_SECRET
         sync: false
-      - key: DB_PASSWORD
+      - key: GROQ_API_KEY
         sync: false
-      - key: AI_API_KEY
-        sync: false
-      - key: AI_API_URL
-        value: https://api.groq.com/openai/v1/chat/completions
-      - key: AI_MODEL
+      - key: MODEL_NAME
         value: llama-3.3-70b-versatile
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
+      - key: CORS_ORIGINS
         sync: false
-      - key: SUPABASE_JWT_SECRET
-        sync: false
+      - key: PORT
+        value: '5000'
