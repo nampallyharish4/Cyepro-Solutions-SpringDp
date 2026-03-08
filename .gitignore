@@ -1,0 +1,23 @@
+# IDE
+.vscode/
+.idea/
+.metadata/
+*.iws
+*.iml
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Java / Maven
+backend-spring/target/
+backend-spring/.mvn/wrapper/maven-wrapper.jar
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
